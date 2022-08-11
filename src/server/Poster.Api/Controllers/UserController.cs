@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Poster.Application.Common.Interfaces;
 
 namespace Poster.Api.Controllers;
 
+[Authorize]
 public class UserController : BaseController
 {
     private readonly IUserService _userService;

@@ -30,7 +30,9 @@ public class AuthorizationController : BaseController
     public async Task<IActionResult> Register(
         [FromForm] UserRegisterDto userRegisterDto)
     {
-        userRegisterDto.Validate();
+        var validationResult = userRegisterDto.Validate();
+        if (!validationResult.Success)
+            return BadRequest(new { Error = validationResult.Error });
         
         var user = new User
         {
