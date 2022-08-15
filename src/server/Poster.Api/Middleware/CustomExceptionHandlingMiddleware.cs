@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Text.Json;
-using Poster.Application.Common.Exceptions;
 
 namespace Poster.Api.Middleware;
 
@@ -28,11 +27,6 @@ public class CustomExceptionHandlingMiddleware
         var error = string.Empty;
         var errorCode = exception switch
         {
-            ArgumentException argumentException => HttpStatusCode.BadRequest,
-            NotFoundException notFoundException => HttpStatusCode.BadRequest,
-            AlreadyFollowingException alreadyFollowingException => HttpStatusCode.BadRequest,
-            IsNotFollowingException isNotFollowingException => HttpStatusCode.BadRequest,
-            AuthorException authorException => HttpStatusCode.Forbidden,
             _ => HttpStatusCode.InternalServerError
         };
 
@@ -42,8 +36,6 @@ public class CustomExceptionHandlingMiddleware
         if (error == string.Empty)
             error = JsonSerializer.Serialize(new { error = exception.Message });
 
-        Console.WriteLine(123);
-        
         await context.Response.WriteAsync(error);
     }
 }

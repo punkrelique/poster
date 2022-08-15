@@ -26,4 +26,9 @@ public interface IUserService
         string from,
         string to,
         CancellationToken cancellationToken);
+
+    Task<bool> UserExists(
+        string email,
+        string username,
+        CancellationToken cancellationToken);
 }

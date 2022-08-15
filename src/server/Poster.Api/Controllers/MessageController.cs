@@ -18,6 +18,9 @@ public class MessageController : BaseController
         [FromQuery] int limit,
         CancellationToken cancellationToken)
     {
+        if (offset < 0 || limit < 0)
+            return BadRequest(new { Error = "Offset or limit cannot be less than 0" });
+        
         var result = await _messageService.GetFollowingUsersMessages(
             UserId,
             offset,

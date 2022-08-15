@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Poster.Application.Common;
-using Poster.Application.Common.Exceptions;
 using Poster.Application.Common.Interfaces;
 using Poster.Application.Models.MessageDtos;
 using Poster.Domain;
@@ -45,6 +44,11 @@ public class MessageService : IMessageService
         string userId,
         CancellationToken cancellationToken)
     {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user == null)
+            return Result.Fail($"User with {userId} not found");
+            
         await _context.Messages.AddAsync(new Message
         {
             Body = body,
@@ -68,6 +72,9 @@ public class MessageService : IMessageService
         if (message == null)
             return Result.Fail($"{nameof(User)} with {messageId} not found");
 
+        if (message.UserId != userId)
+            return Result.Fail("Only author can delete his messages");
+        
         _context.Messages.Remove(message);
         
         await _context.SaveChangesAsync(cancellationToken);

@@ -122,4 +122,16 @@ public class UserService : IUserService
 
         return Result.Ok();
     }
+
+    public async Task<bool> UserExists(
+        string email,
+        string username,
+        CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email || u.UserName == username, cancellationToken);
+
+        return user != null;
+    }
 }

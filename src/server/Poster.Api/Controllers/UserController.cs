@@ -4,7 +4,7 @@ using Poster.Application.Common.Interfaces;
 
 namespace Poster.Api.Controllers;
 
-[Authorize]
+// [Authorize]
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
@@ -27,11 +27,14 @@ public class UserController : BaseController
     [HttpGet]
     [Route("List")]
     public async Task<IActionResult> GetUsers(
-        string username,
+        [FromQuery] string username,
         [FromQuery] int offset,
         [FromQuery] int limit,
         CancellationToken cancellationToken)
     {
+        if (offset < 0 || limit < 0)
+            return BadRequest(new { Error = "Offset or limit cannot be less than 0" });
+        
         var result = await _userService.GetUsers(username, offset, limit, cancellationToken);
         if (!result.Success)
             return BadRequest(new { Error = result.Error });

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Poster.Api.Models.UserDtos;
+using Poster.Application.Common.Interfaces;
 using Poster.Domain;
 
 namespace Poster.Api.Controllers;
@@ -14,25 +15,41 @@ public class AuthorizationController : BaseController
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AuthorizationController> _logger;
+    private readonly IUserService _userService;
 
     public AuthorizationController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<AuthorizationController> logger,
+        IUserService userService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _logger = logger;
+        _userService = userService;
     }
     
     [HttpPost]
     [Route("Registration")]
     public async Task<IActionResult> Register(
-        [FromForm] UserRegisterDto userRegisterDto)
+        [FromForm] UserRegisterDto userRegisterDto,
+        CancellationToken cancellationToken)
     {
         var validationResult = userRegisterDto.Validate();
         if (!validationResult.Success)
             return BadRequest(new { Error = validationResult.Error });
+
+        var userExists = await _userService.UserExists(
+            userRegisterDto.Email,
+            userRegisterDto.Username,
+            cancellationToken
+        );
+        
+        if (userExists)
+            return BadRequest(new {Error = "User with this username/email already exists"});
         
         var user = new User
         {
@@ -40,17 +57,19 @@ public class AuthorizationController : BaseController
             Email = userRegisterDto.Email,
             DateCreated = DateTime.Now
         };
-        
+
         var result = await _userManager.CreateAsync(user, userRegisterDto.Password);
         if (!result.Succeeded)
-            return BadRequest(new { Error = "Unable to create account" });
+            return BadRequest(new { Error = "User with such email already exists" });
         
         return NoContent();
     }
     
     [HttpPost]
     [Route("Login")]
-    public async Task<IActionResult> Login([FromForm] UserLoginDto userLoginDto)
+    public async Task<IActionResult> Login(
+        [FromForm] UserLoginDto userLoginDto,
+        CancellationToken cancellationToken)
     {
         var username = await _userManager.FindByNameAsync(userLoginDto.Login);
         var email = await _userManager.FindByEmailAsync(userLoginDto.Login);
@@ -89,6 +108,8 @@ public class AuthorizationController : BaseController
                     signingCredentials);
 
                 var tokenJson = new JwtSecurityTokenHandler().WriteToken(token);
+
+                _logger.LogInformation("email: " + userLoginDto.Login + " has registered");
 
                 return Ok(new
                 {

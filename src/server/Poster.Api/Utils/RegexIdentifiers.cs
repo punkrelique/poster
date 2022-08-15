@@ -5,7 +5,12 @@ namespace Poster.Api.Utils;
 public static class RegexIdentifiers
 {
     public static readonly Regex MailRegex = 
-        new Regex(
-            @"(\w+@[a-zA-Z_.]+\.[a-zA-Z]{2,255})",
+        new (
+            @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$",
+            RegexOptions.Compiled);
+
+    public static readonly Regex UsernameRegex =
+        new (
+            @"^\w+$",
             RegexOptions.Compiled);
 }
