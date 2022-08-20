@@ -28,15 +28,54 @@ public class MessageService : IMessageService
     
         if (user == null)
             return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {userId} not found");
-    
-        var messages = new List<MessageDto>();
-        foreach (var u in user.Following)
-        {
-            foreach (var message in u.Messages)
-                messages.Add(new MessageDto(u, message));
-        }
         
-        return Result.Ok(new GetMessagesDtoVm { Messages = messages });
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Following
+                .SelectMany(users => users.Messages)
+                .Select(message => new MessageDto (message.User, message))
+                .ToList()
+        });
+    }
+
+    public async Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessages(
+        string userId,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(m => m.Messages)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    
+        if (user == null)
+            return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {userId} not found");
+        
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Messages
+                .Select(message => new MessageDto(message.User, message))
+                .ToList()
+        });
+    }
+
+    public async Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessagesByUsername(string username, int offset, int limit, CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(m => m.Messages)
+            .FirstOrDefaultAsync(u => u.UserName == username, cancellationToken);
+    
+        if (user == null)
+            return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {username} not found");
+        
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Messages
+                .Select(message => new MessageDto(message.User, message))
+                .ToList()
+        });
     }
 
     public async Task<Result> PostMessage(

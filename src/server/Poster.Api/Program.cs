@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Poster.Api.Extensions;
 using Poster.Api.Middleware;
@@ -14,19 +16,32 @@ builder.Services.AddSwagger();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddAuthentication("JWT")
-    .AddJwtBearer("JWT", config =>
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(config =>
     {
-        var secretBytes = Encoding.UTF8.GetBytes(builder.Configuration["Secrets:Secret"]);
+        var secretBytes = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]);
         var key = new SymmetricSecurityKey(secretBytes);
         
         config.TokenValidationParameters = new TokenValidationParameters()
         {
-            ValidIssuer = builder.Configuration["Secrets:Issuer"],
-            ValidAudience = builder.Configuration["Secrets:Audience"],
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
             IssuerSigningKey = key,
         };
     });
+
+builder.Services.AddCors(options =>
+{
+options.AddPolicy(name: "policyName",
+    policyBuilder =>
+    {
+        policyBuilder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -35,6 +50,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("policyName");
 
 app.UseCustomExceptionHandler();
 

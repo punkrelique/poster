@@ -10,6 +10,18 @@ public interface IMessageService
         int offset,
         int limit,
         CancellationToken cancellationToken);
+    
+    Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessages(
+        string userId,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken);
+    
+    Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessagesByUsername(
+        string username,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken);
 
     Task<Result> PostMessage(
         string body,

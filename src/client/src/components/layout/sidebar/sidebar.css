@@ -1,0 +1,9 @@
+.nav_link:hover {
+    background-color: white;
+    color: black;
+}
+
+.nav_link {
+    text-align: left;
+    color: black;
+}
