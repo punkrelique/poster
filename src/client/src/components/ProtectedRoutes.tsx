@@ -1,13 +1,15 @@
 import React, {useContext} from 'react';
 import { Outlet } from 'react-router'
 import {Context} from "../index";
-import {Navigate} from "react-router-dom";
+import {observer} from "mobx-react-lite";
+import Login from "../pages/Login";
 
 const ProtectedRoutes = () => {
     const {userStore} = useContext(Context);
+    console.log(userStore.isAuthenticated);
     return (
-        userStore.isAuthenticated ? <Outlet/> : <Navigate to="/login"/>
+        userStore.isAuthenticated ? <Outlet/> : <Login/>
     );
 };
 
-export default ProtectedRoutes;
+export default observer(ProtectedRoutes);

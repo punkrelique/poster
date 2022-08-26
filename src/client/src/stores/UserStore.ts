@@ -1,4 +1,4 @@
-import IUser from "../types/IUser";
+import {IUser} from "../types/IUser";
 import {makeAutoObservable} from "mobx";
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
@@ -63,8 +63,7 @@ export default class UserStore {
                 username: user.username,
                 id: user.id,
                 dateCreated: user.dateCreated});
-            if (user)
-                this.setAuth(true);
+            this.setAuth(true);
         } catch (e: any){
             console.log(e.response?.data?.message);
         }

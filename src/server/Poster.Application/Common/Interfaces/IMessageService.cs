@@ -23,7 +23,7 @@ public interface IMessageService
         int limit,
         CancellationToken cancellationToken);
 
-    Task<Result> PostMessage(
+    Task<ResultOfT<MessageDto>> PostMessage(
         string body,
         string userId,
         CancellationToken cancellationToken);

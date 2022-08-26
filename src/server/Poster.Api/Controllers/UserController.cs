@@ -13,8 +13,7 @@ public class UserController : BaseController
     public UserController(IUserService userService)
         => _userService = userService;
 
-    [HttpGet]
-    [Route("{userId}")]
+    [HttpGet("{userId}")]
     public async Task<IActionResult> GetUser(
         string userId,
         CancellationToken cancellationToken)
@@ -27,9 +26,9 @@ public class UserController : BaseController
     }
     
     [HttpGet]
-    [Route("{username}")]
+    [Route("username")]
     public async Task<IActionResult> GetUserByUsername(
-        string username,
+        [FromQuery] string username,
         CancellationToken cancellationToken)
     {
         var result = await _userService.GetUserByUsername(username, cancellationToken);
@@ -51,8 +50,7 @@ public class UserController : BaseController
         return Ok(result.Value);
     }
 
-    [HttpGet]
-    [Route("List")]
+    [HttpGet("List")]
     public async Task<IActionResult> GetUsers(
         [FromQuery] string username,
         [FromQuery] int offset,
@@ -69,8 +67,7 @@ public class UserController : BaseController
         return Ok(result.Value);
     }
 
-    [HttpGet]
-    [Route("Followers/{userId}")]
+    [HttpGet("Followers/{userId}")]
     public async Task<IActionResult> GetFollowersCount(
         string userId,
         CancellationToken cancellationToken)
@@ -82,8 +79,7 @@ public class UserController : BaseController
         return Ok(result.Value);
     }
     
-    [HttpGet]
-    [Route("Followers")]
+    [HttpGet("Followers")]
     public async Task<IActionResult> GetFollowersCount(
         CancellationToken cancellationToken)
     {
@@ -122,5 +118,22 @@ public class UserController : BaseController
             return BadRequest(new { Error = result.Error });
 
         return NoContent();
-    } 
+    }
+
+    [HttpGet("IsFollowing")]
+    public async Task<IActionResult> IsFollowing(
+        [FromQuery] string username,
+        CancellationToken cancellationToken)
+    {
+        var result = await _userService.IsFollowed(UserId, username, cancellationToken);
+        if (!result.Success)
+            return BadRequest(new { Error = result.Error });
+
+        return Ok(new
+        {
+            UserFromId = UserId,
+            UserToUsername = username,
+            isFollowing = result.Value
+        });
+    }
 }

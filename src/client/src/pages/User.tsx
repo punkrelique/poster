@@ -1,74 +1,116 @@
-import React, {FC, memo, useContext, useEffect, useState} from 'react';
+import React, {FC, memo, useCallback, useContext, useEffect, useState} from 'react';
 import Sidebar from "../components/layout/sidebar/Sidebar";
 import {Navigate, useParams} from "react-router-dom";
 import UserService from "../services/UserService";
-import IUser from "../types/IUser";
+import {IUser} from "../types/IUser";
 import MessageService from "../services/MessageService";
-import {IMessages} from "../types/IMessage";
-import Messages from "../components/messages/Messages";
-import {Box, HStack, VStack, Spacer} from "@chakra-ui/react";
+import {IMessage, IMessages} from "../types/IMessage";
+import Messages from "../components/Messages";
+import {Box, HStack, VStack, Spacer, Button, Center} from "@chakra-ui/react";
 import Header from "../components/layout/Header";
 import {Context} from "../index";
+import PostMessage from "../components/PostMessage";
+import {observer} from "mobx-react-lite";
 
 const User: FC = () => {
     const {userStore} = useContext(Context);
     const [user, setUser] = useState<IUser>();
-    const [messages, setMessages] = useState<IMessages>();
-    let offset: number = 0;
-    let limit: number = 10;
+    const [messages, setMessages] = useState<IMessage[]>();
+    const [isFollowed, setIsFollowed] = useState<Boolean>(false);
+    const [offset, setOffset] = useState<number>(0);
+    const limit: number = 10;
     const [fetching, setFetching] = useState<boolean>(true);
     const {username} = useParams();
 
-    useEffect( () => {
-        (async function () {
-            if (username !== userStore.user.username) {
-                try {
-                    const user = await UserService.getUserByUsername(username!);
-                    const messages = await MessageService.getUsersMessagesByUsername(username!, offset, limit);
-                    setUser(user.data);
-                    setMessages(messages.data);
-                }
-                catch (e: any) {
-                    return <Navigate to="/error/404"/>
-                }
-            }
-            else {
-                setUser(userStore.user);
-                const messages = await MessageService.getUsersMessages(offset, limit);
-                setMessages(messages.data);
-            }
-        })();
-    }, []);
+    const handleFollowButton = async () => {
+        if (isFollowed)
+            await UserService.unfollowUser(user!.id!);
+        else
+            await UserService.followUser(user!.id!);
 
-    // TODO: follow/unfollow if not users's user
+        setIsFollowed(!isFollowed);
+    }
+
+    const fetchUserInformation = useCallback(async function () {
+        if (username !== userStore.user.username) {
+            try {
+                const user = await UserService.getUserByUsername(username!);
+                setUser(user.data);
+                const isFollowing = await UserService.isFollowing(username!);
+                setIsFollowed(isFollowing.data.isFollowing);
+            } catch (e: any) {
+                return <Navigate to="/error/404"/> // TODO: 404 on notfound user
+            }
+        } else {
+            setUser(userStore.user);
+        }
+        const messages = await MessageService.getUsersMessagesByUsername(username!, offset, limit);
+        setMessages(messages.data.messages);
+    }, [username, offset]);
+
+    useEffect(() => {
+        fetchUserInformation();
+    }, [username, offset]);
+
     // TODO: handle delete message function
-    // TODO: handle post message function
-    // TODO: show id/email only if it is user's account
 
     return (
-        <HStack m={10}>
-            <VStack>
-                <Header/>
-                <Box>
-                    <p>id: {user?.id}</p>
-                    <p>email: {user?.email}</p>
-                    <p>username: {user?.username}</p>
-                    <p>date created: {user?.dateCreated.toString()}</p>
-                    <h1>Your posts:</h1>
-                    <div>
-                        {
-                            // is it the proper way to render things on load?
-                            messages?.messages
-                                ? <Messages messages={messages!.messages} />
-                                : null
-                        }
-                    </div>
-                </Box>
-            </VStack>
-            <Spacer/>
-            <Sidebar/>
-        </HStack>
+        <Center>
+            <HStack m={10}>
+                <VStack>
+                    <Header/>
+                    <Box>
+                        <Box color="white">
+                            {
+                                username === userStore.user.username
+                                    ? <p>email: {user?.email}</p>
+                                    : null
+                            }
+                            <p>username: {user?.username}</p>
+                            <p>date created: {user?.dateCreated.toString()}</p>
+                            {
+                                username !== userStore.user.username
+                                    ? <Button
+                                        bg="yellow.100"
+                                        color="#202023"
+                                        onClick={handleFollowButton}
+                                    >
+                                        {isFollowed ? "Unfollow" : "Follow"}
+                                    </Button>
+                                    : <PostMessage
+                                        messages={messages!}
+                                        setMessages={setMessages!}
+                                    />
+                            }
+                            <h1>{user?.username}'s posts:</h1>
+                        </Box>
+                        <Box>
+                            {
+                                // is it the proper way to render things on load?
+                                messages
+                                    ? <VStack>
+                                        <Messages
+                                            messages={messages}
+                                            onEmptyText={"Here will be posted messages.. Empty for now"}
+                                        />
+                                        <Button
+                                            bg="yellow.100"
+                                            color="#202023"
+                                            onClick={() => setOffset(limit+offset)}
+                                        >
+                                            Load more
+                                        </Button>
+                                    </VStack>
+                                    : null
+                            }
+                        </Box>
+                    </Box>
+                </VStack>
+                <Spacer/>
+                <Sidebar/>
+            </HStack>
+        </Center>
     );
 };
 
-export default memo(User);
+export default memo(observer(User));

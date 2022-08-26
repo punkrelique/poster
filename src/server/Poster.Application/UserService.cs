@@ -148,4 +148,22 @@ public class UserService : IUserService
 
         return user != null;
     }
+
+    public async Task<ResultOfT<bool>> IsFollowed(
+        string fromId,
+        string toUsername,
+        CancellationToken cancellationToken)
+    {
+        var userFrom = await _context.Users
+            .AsNoTracking()
+            .Include(i => i.Following)
+            .FirstOrDefaultAsync(user => user.Id == fromId, cancellationToken);
+
+        if (userFrom == null)
+            return Result.Fail<bool>($"{nameof(User)} with {fromId} not found");
+
+        return userFrom.Following.FirstOrDefault(user => user.UserName == toUsername) == null
+            ? Result.Fail<bool>("")
+            : Result.Ok<bool>(true);
+    }
 }

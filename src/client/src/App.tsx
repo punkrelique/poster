@@ -27,8 +27,8 @@ const App: FC = () => {
                     <Route path="/:username" element={<Account/>}/>
                     <Route path="/" element={<Feed/>}/>
                 </Route>
-                <Route path="/login" element={userStore.isAuthenticated ? <Navigate to="/"/> : <Login/>}/>
-                <Route path="/signup" element={userStore.isAuthenticated ? <Navigate to="/"/> : <Signup/>}/>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/signup" element={<Signup/>}/>
                 <Route path="/error/404" element={<NotFound/>}/>
             </Routes>
         </div>

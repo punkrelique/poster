@@ -36,4 +36,9 @@ public interface IUserService
         string email,
         string username,
         CancellationToken cancellationToken);
+
+    Task<ResultOfT<bool>> IsFollowed(
+        string fromId,
+        string toUsername,
+        CancellationToken cancellationToken);
 }

@@ -67,7 +67,7 @@ public class MessageController : BaseController
         if (offset < 0 || limit < 0)
             return BadRequest(new { Error = "Offset or limit cannot be less than 0" });
         
-        var result = await _messageService.GetUsersMessages(
+        var result = await _messageService.GetUsersMessagesByUsername(
             username,
             offset,
             limit,
@@ -88,7 +88,7 @@ public class MessageController : BaseController
         if (!result.Success)
             return BadRequest(new { Error = result.Error });
 
-        return NoContent();
+        return Ok(result.Value);
     }
 
     [HttpDelete]

@@ -8,18 +8,17 @@ import "./sidebar.css";
 const Sidebar = () => {
     const {userStore} = useContext(Context);
     return (
-        <Box as="nav" position="fixed" right="0" top="38" pr={5}>
-                <Stack spacing="10px">
+        <Box as="nav" pr={5}>
+                <Stack color="black" position="fixed" top={7} ml={2} spacing="10px">
                     <Link className="nav_link" to={"/" + userStore.user.username}> {/*TODO: user by id*/}
-                        <Text fontSize='30px' color="yellow.100">Account</Text>
+                        <Text fontSize='30px'>Account</Text>
                     </Link>
                     <Link className="nav_link" to="/">
-                        <Text fontSize='30px' color="yellow.100">Feed</Text>
+                        <Text fontSize='30px'>Feed</Text>
                     </Link>
                     <Link className="nav_link" to="/login">
                         <Text
                             fontSize='30px'
-                            color="yellow.100"
                             onClick={() => userStore.logout()}
                         >
                             Logout

@@ -15,11 +15,18 @@ export default class MessageService {
 
     static async getUsersMessagesByUsername(username: string, offset: number, limit: number)
         : Promise<AxiosResponse<IMessages>> {
-        return $api.get<IMessages>("/v1/message/", {params: {username, offset, limit}});
+        return $api.get<IMessages>(
+            "/v1/message/" + username,
+            {
+                params: {offset, limit}
+            });
     }
 
     static async postMessage(body: string): Promise<AxiosResponse> {
-        return $api.post("/v1/message", {body});
+        return $api.post(
+            "/v1/message",
+            {body},
+            {headers: {"Content-Type": "multipart/form-data"}});
     }
 
     static async deleteMessage(messageId: string): Promise<AxiosResponse> {

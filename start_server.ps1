@@ -1,0 +1,1 @@
+cd "C:\Users\invis\dev\poster-rep\src\server\Poster.Api"; dwr;
