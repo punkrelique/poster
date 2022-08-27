@@ -34,6 +34,7 @@ public class MessageService : IMessageService
             Messages = user.Following
                 .SelectMany(users => users.Messages)
                 .Select(message => new MessageDto (message.User, message))
+                .OrderBy(o => o.DateCreated)
                 .ToList()
         });
     }
@@ -46,9 +47,12 @@ public class MessageService : IMessageService
     {
         var user = await _context.Users
             .AsNoTracking()
-            .Include(m => m.Messages)
+            .Include(m => m.Messages.Skip(offset).Take(limit))
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
     
+        foreach (var i in user.Messages)
+            Console.WriteLine(i.Id);
+        
         if (user == null)
             return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {userId} not found");
         
@@ -56,6 +60,7 @@ public class MessageService : IMessageService
         {
             Messages = user.Messages
                 .Select(message => new MessageDto(message.User, message))
+                .OrderBy(o => o.DateCreated)
                 .ToList()
         });
     }
@@ -68,9 +73,12 @@ public class MessageService : IMessageService
     {
         var user = await _context.Users
             .AsNoTracking()
-            .Include(m => m.Messages)
+            .Include(m => m.Messages.Skip(offset).Take(limit))
             .FirstOrDefaultAsync(u => u.UserName == username, cancellationToken);
     
+        foreach (var i in user.Messages)
+            Console.WriteLine(i.Id);
+        
         if (user == null)
             return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {username} not found");
         
@@ -78,6 +86,7 @@ public class MessageService : IMessageService
         {
             Messages = user.Messages
                 .Select(message => new MessageDto(message.User, message))
+                .OrderBy(o => o.DateCreated)
                 .ToList()
         });
     }

@@ -6,12 +6,20 @@ using Poster.Api.Extensions;
 using Poster.Api.Middleware;
 using Poster.Application;
 using Poster.Infrastructure;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateLogger();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

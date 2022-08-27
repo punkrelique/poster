@@ -5,7 +5,7 @@ import {IMessage} from "../types/IMessage";
 
 interface IPostMessageProps {
     messages: IMessage[],
-    setMessages: Dispatch<React.SetStateAction<IMessage[] | undefined>>
+    setMessages: Dispatch<React.SetStateAction<IMessage[]>>
 }
 
 const PostMessage: FC<IPostMessageProps> = ({messages, setMessages}) => {

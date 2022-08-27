@@ -1,1 +1,1 @@
-cd "C:\Users\invis\dev\poster-rep\src\server\Poster.Api"; dwr;
+cd ".\src\server\Poster.Api"; dotnet watch run;

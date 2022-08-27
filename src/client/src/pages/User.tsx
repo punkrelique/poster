@@ -4,23 +4,25 @@ import {Navigate, useParams} from "react-router-dom";
 import UserService from "../services/UserService";
 import {IUser} from "../types/IUser";
 import MessageService from "../services/MessageService";
-import {IMessage, IMessages} from "../types/IMessage";
+import {IMessage} from "../types/IMessage";
 import Messages from "../components/Messages";
 import {Box, HStack, VStack, Spacer, Button, Center} from "@chakra-ui/react";
 import Header from "../components/layout/Header";
 import {Context} from "../index";
 import PostMessage from "../components/PostMessage";
 import {observer} from "mobx-react-lite";
+import LoadMoreButton from "../components/LoadMoreButton";
 
 const User: FC = () => {
     const {userStore} = useContext(Context);
     const [user, setUser] = useState<IUser>();
-    const [messages, setMessages] = useState<IMessage[]>();
+    const [messages, setMessages] = useState<IMessage[]>([]);
     const [isFollowed, setIsFollowed] = useState<Boolean>(false);
     const [offset, setOffset] = useState<number>(0);
     const limit: number = 10;
     const [fetching, setFetching] = useState<boolean>(true);
     const {username} = useParams();
+    const [showLoadMore, setShowLoadMore] = useState<boolean>(true);
 
     const handleFollowButton = async () => {
         if (isFollowed)
@@ -44,13 +46,24 @@ const User: FC = () => {
         } else {
             setUser(userStore.user);
         }
-        const messages = await MessageService.getUsersMessagesByUsername(username!, offset, limit);
-        setMessages(messages.data.messages);
-    }, [username, offset]);
+    }, [username]);
+
+    const fetchMessages = useCallback(async function () {
+        const fetchedMessages = await MessageService.getUsersMessagesByUsername(username!, offset, limit);
+        if (fetchedMessages.data.messages.length === 0)
+            setShowLoadMore(false);
+        else
+            setMessages(messages.concat(fetchedMessages.data.messages));
+    }, [offset])
 
     useEffect(() => {
         fetchUserInformation();
-    }, [username, offset]);
+        fetchMessages();
+    }, [username])
+
+    useEffect(() => {
+        fetchMessages();
+    }, [offset])
 
     // TODO: handle delete message function
 
@@ -79,7 +92,7 @@ const User: FC = () => {
                                     </Button>
                                     : <PostMessage
                                         messages={messages!}
-                                        setMessages={setMessages!}
+                                        setMessages={setMessages}
                                     />
                             }
                             <h1>{user?.username}'s posts:</h1>
@@ -93,13 +106,14 @@ const User: FC = () => {
                                             messages={messages}
                                             onEmptyText={"Here will be posted messages.. Empty for now"}
                                         />
-                                        <Button
-                                            bg="yellow.100"
-                                            color="#202023"
-                                            onClick={() => setOffset(limit+offset)}
+                                        <LoadMoreButton
+                                            offset={offset}
+                                            setOffset={setOffset}
+                                            limit={limit}
+                                            show={showLoadMore}
                                         >
                                             Load more
-                                        </Button>
+                                        </LoadMoreButton>
                                     </VStack>
                                     : null
                             }

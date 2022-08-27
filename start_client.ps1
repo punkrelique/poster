@@ -1,1 +1,1 @@
-cd "C:\Users\invis\dev\poster-rep\src\client"; npm start;
+cd ".\src\client"; npm start;

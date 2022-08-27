@@ -6,7 +6,6 @@ import Login from "../pages/Login";
 
 const ProtectedRoutes = () => {
     const {userStore} = useContext(Context);
-    console.log(userStore.isAuthenticated);
     return (
         userStore.isAuthenticated ? <Outlet/> : <Login/>
     );
