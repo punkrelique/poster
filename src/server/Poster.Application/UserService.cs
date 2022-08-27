@@ -28,6 +28,20 @@ public class UserService : IUserService
         return Result.Ok(new GetUserDto(user));
     }
 
+    public async Task<ResultOfT<GetUserDto>> GetUserByUsername(
+        string username,
+        CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.UserName == username, cancellationToken);
+
+        if (user == null)
+            return Result.Fail<GetUserDto>($"{nameof(User)} with {username} not found");
+
+        return Result.Ok(new GetUserDto(user));
+    }
+
     public async Task<ResultOfT<GetUsersDtoVm>> GetUsers(
         string username,
         int offset,
@@ -133,5 +147,23 @@ public class UserService : IUserService
             .FirstOrDefaultAsync(u => u.Email == email || u.UserName == username, cancellationToken);
 
         return user != null;
+    }
+
+    public async Task<ResultOfT<bool>> IsFollowed(
+        string fromId,
+        string toUsername,
+        CancellationToken cancellationToken)
+    {
+        var userFrom = await _context.Users
+            .AsNoTracking()
+            .Include(i => i.Following)
+            .FirstOrDefaultAsync(user => user.Id == fromId, cancellationToken);
+
+        if (userFrom == null)
+            return Result.Fail<bool>($"{nameof(User)} with {fromId} not found");
+
+        return userFrom.Following.FirstOrDefault(user => user.UserName == toUsername) == null
+            ? Result.Fail<bool>("")
+            : Result.Ok<bool>(true);
     }
 }

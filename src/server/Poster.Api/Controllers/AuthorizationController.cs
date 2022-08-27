@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using Poster.Api.Models.UserDtos;
 using Poster.Application.Common.Interfaces;
 using Poster.Domain;
@@ -76,6 +77,7 @@ public class AuthorizationController : BaseController
 
         if (username != null || email != null)
         {
+            var user = email ?? username; 
             var signInResult = await _signInManager.PasswordSignInAsync(
                 userLoginDto.Login, 
                 userLoginDto.Password,
@@ -86,11 +88,12 @@ public class AuthorizationController : BaseController
             {
                 var claims = new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, "some_id"),
-                    new Claim("granny", "cookie")
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                    new Claim(JwtRegisteredClaimNames.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 };
 
-                var secretBytes = Encoding.UTF8.GetBytes(_configuration["Secrets:Secret"]);
+                var secretBytes = Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]);
 
                 var signingCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(secretBytes),
@@ -100,16 +103,14 @@ public class AuthorizationController : BaseController
                 var till = DateTime.Now.AddDays(7);
                 
                 var token = new JwtSecurityToken(
-                    _configuration["Secrets:Issuer"],
-                    _configuration["Secrets:Audience"],
+                    _configuration["JWT:Issuer"],
+                    _configuration["JWT:Audience"],
                     claims,
                     from,
                     till,
                     signingCredentials);
 
                 var tokenJson = new JwtSecurityTokenHandler().WriteToken(token);
-
-                _logger.LogInformation("email: " + userLoginDto.Login + " has registered");
 
                 return Ok(new
                 {
@@ -121,5 +122,12 @@ public class AuthorizationController : BaseController
         }
 
         return BadRequest(new { Error = "Unable to login"});
+    }
+
+    [HttpPost]
+    [Route("Refresh")]
+    public async Task RefreshToken(CancellationToken cancellationToken)
+    {
+        
     }
 }

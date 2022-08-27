@@ -28,18 +28,70 @@ public class MessageService : IMessageService
     
         if (user == null)
             return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {userId} not found");
-    
-        var messages = new List<MessageDto>();
-        foreach (var u in user.Following)
-        {
-            foreach (var message in u.Messages)
-                messages.Add(new MessageDto(u, message));
-        }
         
-        return Result.Ok(new GetMessagesDtoVm { Messages = messages });
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Following
+                .SelectMany(users => users.Messages)
+                .Select(message => new MessageDto (message.User, message))
+                .OrderBy(o => o.DateCreated)
+                .ToList()
+        });
     }
 
-    public async Task<Result> PostMessage(
+    public async Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessages(
+        string userId,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(m => m.Messages.Skip(offset).Take(limit))
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    
+        foreach (var i in user.Messages)
+            Console.WriteLine(i.Id);
+        
+        if (user == null)
+            return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {userId} not found");
+        
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Messages
+                .Select(message => new MessageDto(message.User, message))
+                .OrderBy(o => o.DateCreated)
+                .ToList()
+        });
+    }
+
+    public async Task<ResultOfT<GetMessagesDtoVm>> GetUsersMessagesByUsername(
+        string username,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(m => m.Messages.Skip(offset).Take(limit))
+            .FirstOrDefaultAsync(u => u.UserName == username, cancellationToken);
+    
+        foreach (var i in user.Messages)
+            Console.WriteLine(i.Id);
+        
+        if (user == null)
+            return Result.Fail<GetMessagesDtoVm>($"{nameof(User)} with {username} not found");
+        
+        return Result.Ok(new GetMessagesDtoVm
+        {
+            Messages = user.Messages
+                .Select(message => new MessageDto(message.User, message))
+                .OrderBy(o => o.DateCreated)
+                .ToList()
+        });
+    }
+
+    public async Task<ResultOfT<MessageDto>> PostMessage(
         string body,
         string userId,
         CancellationToken cancellationToken)
@@ -47,18 +99,26 @@ public class MessageService : IMessageService
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         if (user == null)
-            return Result.Fail($"User with {userId} not found");
-            
-        await _context.Messages.AddAsync(new Message
+            return Result.Fail<MessageDto>($"User with {userId} not found");
+
+        var message = new Message
         {
             Body = body,
             DateCreated = DateTime.Now,
             UserId = userId,
-        }, cancellationToken);
+        };
+        
+        await _context.Messages.AddAsync(message, cancellationToken);
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Ok();
+        return Result.Ok<MessageDto>(new MessageDto
+        {
+            Id = message.Id,
+            Body = message.Body,
+            DateCreated = message.DateCreated,
+            Username = message.User.UserName
+        });
     }
 
     public async Task<Result> DeleteMessage(
@@ -73,7 +133,7 @@ public class MessageService : IMessageService
             return Result.Fail($"{nameof(User)} with {messageId} not found");
 
         if (message.UserId != userId)
-            return Result.Fail("Only author can delete his messages");
+            return Result.Fail("Only author can delete their messages");
         
         _context.Messages.Remove(message);
         

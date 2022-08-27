@@ -1,11 +1,16 @@
-﻿using Poster.Application.Models.MessageDtos;
-using Poster.Application.Models.UserDtos;
+﻿using Poster.Application.Models.UserDtos;
 
 namespace Poster.Application.Common.Interfaces;
 
 public interface IUserService
 {
-    Task<ResultOfT<GetUserDto>> GetUser(string userId, CancellationToken cts);
+    Task<ResultOfT<GetUserDto>> GetUser(
+    string userId,
+     CancellationToken cancellationToken);
+
+    Task<ResultOfT<GetUserDto>> GetUserByUsername(
+        string username,
+        CancellationToken cancellationToken);
     
     Task<ResultOfT<GetUsersDtoVm>> GetUsers(
         string username,
@@ -30,5 +35,10 @@ public interface IUserService
     Task<bool> UserExists(
         string email,
         string username,
+        CancellationToken cancellationToken);
+
+    Task<ResultOfT<bool>> IsFollowed(
+        string fromId,
+        string toUsername,
         CancellationToken cancellationToken);
 }

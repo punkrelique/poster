@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Silkscreen&display=swap');
+
+.App {
+    font-family: 'Silkscreen', cursive;
+}
+
+.App:hover {
+    cursor: pointer;
+}

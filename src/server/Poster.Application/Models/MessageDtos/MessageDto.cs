@@ -17,4 +17,9 @@ public class MessageDto
         DateCreated = message.DateCreated;
         Username = user.UserName;
     }
+
+    public MessageDto()
+    {
+        
+    }
 }

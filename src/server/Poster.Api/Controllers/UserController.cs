@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Poster.Application.Common.Interfaces;
 
 namespace Poster.Api.Controllers;
 
-// [Authorize]
+[Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
@@ -12,20 +13,44 @@ public class UserController : BaseController
     public UserController(IUserService userService)
         => _userService = userService;
 
-    [HttpGet]
+    [HttpGet("{userId}")]
     public async Task<IActionResult> GetUser(
         string userId,
         CancellationToken cancellationToken)
     {
         var result = await _userService.GetUser(userId, cancellationToken);
         if (!result.Success)
-            return BadRequest(new { Error = result.Error });
+            return NotFound(new { Error = result.Error });
+
+        return Ok(result.Value);
+    }
+    
+    [HttpGet]
+    [Route("username")]
+    public async Task<IActionResult> GetUserByUsername(
+        [FromQuery] string username,
+        CancellationToken cancellationToken)
+    {
+        var result = await _userService.GetUserByUsername(username, cancellationToken);
+        if (!result.Success)
+            return NotFound(new { Error = result.Error });
 
         return Ok(result.Value);
     }
 
+    
     [HttpGet]
-    [Route("List")]
+    public async Task<IActionResult> GetUser(
+        CancellationToken cancellationToken)
+    {
+        var result = await _userService.GetUser(UserId, cancellationToken);
+        if (!result.Success)
+            return NotFound(new { Error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpGet("List")]
     public async Task<IActionResult> GetUsers(
         [FromQuery] string username,
         [FromQuery] int offset,
@@ -42,8 +67,7 @@ public class UserController : BaseController
         return Ok(result.Value);
     }
 
-    [HttpGet]
-    [Route("Followers/{userId}")]
+    [HttpGet("Followers/{userId}")]
     public async Task<IActionResult> GetFollowersCount(
         string userId,
         CancellationToken cancellationToken)
@@ -55,8 +79,7 @@ public class UserController : BaseController
         return Ok(result.Value);
     }
     
-    [HttpGet]
-    [Route("Followers")]
+    [HttpGet("Followers")]
     public async Task<IActionResult> GetFollowersCount(
         CancellationToken cancellationToken)
     {
@@ -84,16 +107,33 @@ public class UserController : BaseController
     
     [HttpPost("Unfollow")]
     public async Task<IActionResult> UnfollowUser(
-        [FromQuery] string to,
+        [FromQuery] string from,
         CancellationToken cancellationToken)
     {
-        if (UserId == to)
+        if (UserId == from)
             return BadRequest(new { Error = "Cannot follow yourself" });
         
-        var result = await _userService.UnfollowUser(UserId, to, cancellationToken);
+        var result = await _userService.UnfollowUser(UserId, from, cancellationToken);
         if (!result.Success)
             return BadRequest(new { Error = result.Error });
 
         return NoContent();
-    } 
+    }
+
+    [HttpGet("IsFollowing")]
+    public async Task<IActionResult> IsFollowing(
+        [FromQuery] string username,
+        CancellationToken cancellationToken)
+    {
+        var result = await _userService.IsFollowed(UserId, username, cancellationToken);
+        if (!result.Success)
+            return BadRequest(new { Error = result.Error });
+
+        return Ok(new
+        {
+            UserFromId = UserId,
+            UserToUsername = username,
+            isFollowing = result.Value
+        });
+    }
 }

@@ -1,0 +1,9 @@
+.nav_link:hover {
+    background-color: white;
+    color: #202023;
+}
+
+.nav_link {
+    text-align: left;
+    color: #FEFCBF;
+}
