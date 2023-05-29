@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - env:
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=db;Port=5432;Database=Poster;Username=postgres;Password=admin
+          image: punkrelique/poster-backend
+          name: backend
+          ports:
+            - containerPort: 80
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app:
+      backend
+  type: LoadBalancer
+

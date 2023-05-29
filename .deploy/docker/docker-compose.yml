@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   client:
     image: punkrelique/poster-frontend
     container_name: 'client'
@@ -8,6 +9,7 @@ services:
       - REACT_APP_BACKEND_API=http://localhost:8000/api
     ports:
       - "3000:3000"
+
   server:
     image: punkrelique/poster-frontend
     container_name: 'server'
