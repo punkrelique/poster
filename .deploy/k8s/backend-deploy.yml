@@ -18,6 +18,9 @@ spec:
         - env:
             - name: ConnectionStrings__DefaultConnection
               value: Host=db;Port=5432;Database=Poster;Username=postgres;Password=admin
+          
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
           image: punkrelique/poster-backend
           name: backend
           ports:

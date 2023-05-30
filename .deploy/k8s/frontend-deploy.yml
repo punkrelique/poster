@@ -17,7 +17,7 @@ spec:
       containers:
         - env:
             - name: REACT_APP_BACKEND_API
-              value: http://localhost:80/api
+              value: http://my-poster-app.com/api
           image: punkrelique/poster-frontend
           name: frontend
           ports:
