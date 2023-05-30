@@ -15,20 +15,31 @@ spec:
         app: db
     spec:
       containers:
-        - env:
+        - image: postgres 
+          name: db
+          env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
+
             - name: POSTGRES_DB
-              value: Poster
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_DB
+
             - name: POSTGRES_PASSWORD
-              value: admin
+              valueFrom:
+                secretKeyRef: 
+                  name: db-secret
+                  key: POSTGRES_PASSWORD
+
             - name: POSTGRES_USER
-              value: postgres
-          image: postgres
-          name: db
+              valueFrom:
+                secretKeyRef: 
+                  name: db-secret
+                  key: POSTGRES_USER
           ports:
             - containerPort: 5432
-          resources: {}
       restartPolicy: Always
 ---
 apiVersion: v1

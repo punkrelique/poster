@@ -15,17 +15,18 @@ spec:
         app: backend
     spec:
       containers:
-        - env:
+        - image: punkrelique/poster-backend
+          name: backend
+          env:
             - name: ConnectionStrings__DefaultConnection
-              value: Host=db;Port=5432;Database=Poster;Username=postgres;Password=admin
-          
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DbConnectionString
             - name: ASPNETCORE_ENVIRONMENT
               value: Development
-          image: punkrelique/poster-backend
-          name: backend
           ports:
             - containerPort: 80
-      restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
