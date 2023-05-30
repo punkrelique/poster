@@ -35,5 +35,5 @@ spec:
   selector:
     app:
       backend
-  type: LoadBalancer
+  type: NodePort
 

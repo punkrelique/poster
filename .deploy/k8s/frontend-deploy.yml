@@ -35,4 +35,4 @@ spec:
   selector:
     app:
       frontend
-  type: LoadBalancer
+  type: NodePort
