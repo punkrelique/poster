@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet 
+kind: StatefulSet
 metadata:
   labels:
     app: db
@@ -15,32 +15,42 @@ spec:
         app: db
     spec:
       containers:
-        - image: postgres 
+        - image: postgres
           name: db
           env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
-
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: db-secret
                   key: POSTGRES_DB
-
             - name: POSTGRES_PASSWORD
               valueFrom:
-                secretKeyRef: 
+                secretKeyRef:
                   name: db-secret
                   key: POSTGRES_PASSWORD
-
             - name: POSTGRES_USER
               valueFrom:
-                secretKeyRef: 
+                secretKeyRef:
                   name: db-secret
                   key: POSTGRES_USER
           ports:
             - containerPort: 5432
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data/pgdata
       restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
 ---
 apiVersion: v1
 kind: Service
@@ -52,4 +62,3 @@ spec:
       targetPort: 5432
   selector:
     app: db
-
