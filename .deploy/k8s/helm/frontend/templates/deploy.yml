@@ -17,22 +17,9 @@ spec:
       containers:
         - env:
             - name: REACT_APP_BACKEND_API
-              value: http://my-poster-app.com/api
+              value: {{ .Values.backendApi }}
           image: punkrelique/poster-frontend
           name: frontend
           ports:
             - containerPort: 3000
       restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-spec:
-  ports:
-    - port: 3000
-      targetPort: 3000
-  selector:
-    app:
-      frontend
-  type: NodePort
