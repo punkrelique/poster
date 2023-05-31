@@ -31,7 +31,7 @@ jobs:
       run: docker push punkrelique/poster-frontend:latest
       
     - name: Build the backend Docker image
-      run: docker build --tag punkrelique/poster-backend:latest src/server/Poster.Api/
+      run: docker build --tag punkrelique/poster-backend:latest src/server/ -f src/server/Poster.Api/Dockerfile
       
     - name: Push the frontend Docker image
       run: docker push punkrelique/poster-backend:latest
