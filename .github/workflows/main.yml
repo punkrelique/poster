@@ -1,0 +1,45 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 6'
+
+jobs:
+  main:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: 'macos'
+            image: 'macos-12'
+          - name: 'linux'
+            image: 'ubuntu-22.04'
+          - name: 'windows'
+            image: 'windows-2022'
+    runs-on: ubuntu-latest
+    
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build
+      
+    - name: Test
+      run: dotnet test
