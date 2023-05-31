@@ -14,14 +14,6 @@ jobs:
   main:
     strategy:
       fail-fast: false
-      matrix:
-        config:
-          - name: 'macos'
-            image: 'macos-12'
-          - name: 'linux'
-            image: 'ubuntu-22.04'
-          - name: 'windows'
-            image: 'windows-2022'
     runs-on: ubuntu-latest
     
     env:
@@ -36,10 +28,13 @@ jobs:
         dotnet-version: 6.0.x
         
     - name: Restore dependencies
+      working-directory: src/server
       run: dotnet restore
       
     - name: Build
+      working-directory: src/server
       run: dotnet build
       
     - name: Test
+      working-directory: tests/Poster.IntegrationTests
       run: dotnet test
