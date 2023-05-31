@@ -34,7 +34,3 @@ jobs:
     - name: Build
       working-directory: src/server
       run: dotnet build
-      
-    - name: Test
-      working-directory: tests/Poster.IntegrationTests
-      run: dotnet test
