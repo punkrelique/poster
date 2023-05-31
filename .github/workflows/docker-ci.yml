@@ -25,13 +25,13 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
     
     - name: Build the frontend Docker image
-      run: docker build -f src/client/Dockerfile -t punkrelique/poster-frontend:latest -C src/client .
+      run: docker build --tag punkrelique/poster-frontend:latest src/client/
 
     - name: Push the frontend Docker image
       run: docker push punkrelique/poster-frontend:latest
       
     - name: Build the backend Docker image
-      run: docker build -f src/server/Poster.Api/Dockerfile -t punkrelique/poster-frontend:latest -C src/server .
+      run: docker build --tag punkrelique/poster-backend:latest src/server/Poster.Api/
       
     - name: Push the frontend Docker image
       run: docker push punkrelique/poster-backend:latest
