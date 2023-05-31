@@ -1,7 +1,9 @@
 import axios from "axios";
-import {getCookie} from "./cookies";
+import { getCookie } from "./cookies";
 
-export const API_URL = "https://localhost:7289/api/"
+console.log(process.env.REACT_APP_BACKEND_API + " API")
+
+export const API_URL = process.env.REACT_APP_BACKEND_API// "https://localhost:7289/api/"
 
 const $api = axios.create({
     baseURL: API_URL // TODO: "process.env.WEB_API",

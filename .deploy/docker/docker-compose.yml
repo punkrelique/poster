@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+
+  client:
+    image: punkrelique/poster-frontend
+    container_name: 'client'
+    environment:
+      - REACT_APP_BACKEND_API=http://localhost:8000/api
+    ports:
+      - "3000:3000"
+
+  server:
+    image: punkrelique/poster-frontend
+    container_name: 'server'
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=Poster;Username=postgres;Password=admin
+    ports:
+      - "8000:80"
+
+  db:
+    image: postgres
+    container_name: 'db'
+    ports:
+      - "7000:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=Poster
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    restart: always
+    volumes:
+      - '~/data:/var/lib/postgresql/data'

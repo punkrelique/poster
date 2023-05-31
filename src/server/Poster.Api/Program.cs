@@ -1,6 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.IdentityModel.Tokens;
 using Poster.Api.Extensions;
 using Poster.Api.Middleware;
@@ -52,6 +55,14 @@ options.AddPolicy(name: "policyName",
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope()) // TODO: move to separate project
+{
+    var applicationDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
+    applicationDbContext.Database.Migrate();
+    var lastAppliedMigration = (await applicationDbContext.Database.GetAppliedMigrationsAsync()).Last();
+    Console.WriteLine($"You're on schema version: {lastAppliedMigration}");
+}
 
 if (app.Environment.IsDevelopment())
 {

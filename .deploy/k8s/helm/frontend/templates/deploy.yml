@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - env:
+            - name: REACT_APP_BACKEND_API
+              value: {{ .Values.backendApi }}
+          image: punkrelique/poster-frontend
+          name: frontend
+          ports:
+            - containerPort: 3000
+      restartPolicy: Always
